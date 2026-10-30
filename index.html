@@ -1,0 +1,986 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MemeCam - Recrie Momentos</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #100e19;
+  color: white;
+  min-height: 100vh;
+}
+
+header {
+  padding: 20px;
+  text-align: center;
+  background: #1c1729;
+  border-bottom: 1px solid #39304b;
+}
+
+header h1 {
+  color: #c58aff;
+  font-size: 28px;
+}
+
+header p {
+  color: #aaa0b9;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+main {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+}
+
+h2 {
+  font-size: 19px;
+  margin: 22px 0 12px;
+}
+
+.templates {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.template {
+  background: #211b30;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: 15px;
+  cursor: pointer;
+  color: white;
+  text-align: left;
+  transition: .2s;
+}
+
+.template:hover,
+.template.active {
+  border-color: #c58aff;
+  background: #332445;
+}
+
+.template .emoji {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.template small {
+  color: #b8acc7;
+  display: block;
+  margin-top: 5px;
+  line-height: 1.4;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 15px 0;
+}
+
+select, button {
+  padding: 13px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+select {
+  background: #292238;
+  color: white;
+  border: 1px solid #55466a;
+}
+
+button {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.primary {
+  background: #a85df0;
+  color: white;
+}
+
+.secondary {
+  background: #332b43;
+  color: white;
+  border: 1px solid #55466a;
+}
+
+button:active {
+  transform: scale(.97);
+}
+
+.camera-box {
+  position: relative;
+  width: 100%;
+  max-width: 650px;
+  margin: 20px auto;
+  background: #09080d;
+  border-radius: 18px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+}
+
+video, #result {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#result {
+  display: none;
+}
+
+.guide {
+  position: absolute;
+  bottom: 12px;
+  left: 10px;
+  right: 10px;
+  background: rgba(0,0,0,.65);
+  padding: 12px;
+  text-align: center;
+  border-radius: 10px;
+  color: white;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.camera-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: #bba9ce;
+  text-align: center;
+  padding: 20px;
+}
+
+.camera-placeholder span {
+  font-size: 50px;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.status {
+  text-align: center;
+  color: #bba9ce;
+  font-size: 13px;
+  margin: 12px;
+}
+
+footer {
+  text-align: center;
+  color: #8f849e;
+  padding: 30px 10px;
+  font-size: 12px;
+}
+
+@media (min-width: 650px) {
+  .templates {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  header h1 {
+    font-size: 34px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>📸 MemeCam</h1>
+  <p>Entre no meme. Crie seu próprio momento!</p>
+</header>
+
+<main>
+
+<h2>🎭 Escolha sua inspiração</h2>
+
+<div class="templates">
+
+<button class="template active"
+onclick="chooseTemplate(this, '😂 Meme clássico', 'Faça uma expressão engraçada e exagere na reação!')">
+<span class="emoji">😂</span>
+<strong>Meme clássico</strong>
+<small>Recrie uma situação engraçada.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '🦸 Equipe de heróis', 'Todos devem fazer uma pose de equipe de super-heróis!')">
+<span class="emoji">🦸</span>
+<strong>Equipe de heróis</strong>
+<small>Uma pose épica em grupo.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '😱 Reação dramática', 'Faça a maior expressão de surpresa possível!')">
+<span class="emoji">😱</span>
+<strong>Reação dramática</strong>
+<small>Uma reação inesquecível.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '🎵 Capa de álbum', 'Organize o grupo como se fosse uma capa musical!')">
+<span class="emoji">🎵</span>
+<strong>Capa de álbum</strong>
+<small>Crie uma foto cinematográfica.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '🤔 Confusão', 'Todos olham para um ponto como se estivessem confusos!')">
+<span class="emoji">🤔</span>
+<strong>Confusão</strong>
+<small>O meme da dúvida.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '👑 Foto de celebridade', 'Faça uma pose de estrela no tapete vermelho!')">
+<span class="emoji">👑</span>
+<strong>Celebridade</strong>
+<small>Foto de capa de revista.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '🤝 Dupla dinâmica', 'Façam uma pose combinada de parceria!')">
+<span class="emoji">🤝</span>
+<strong>Dupla dinâmica</strong>
+<small>Uma foto em parceria.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '🎬 Cena de filme', 'Prepare uma pose de pôster de cinema!')">
+<span class="emoji">🎬</span>
+<strong>Cena de filme</strong>
+<small>Seu próprio pôster.</small>
+</button>
+
+</div>
+
+<h2>👥 Participantes</h2>
+
+<div class="controls">
+  <label for="people">Pessoas na foto:</label>
+  <select id="people">
+    <option value="1">1 pessoa</option>
+    <option value="2">2 pessoas</option>
+    <option value="3">3 pessoas</option>
+    <option value="4">4 pessoas</option>
+    <option value="5">5 pessoas</option>
+  </select>
+</div>
+
+<h2>📷 Seu estúdio</h2>
+
+<div class="camera-box">
+
+  <video id="video" autoplay playsinline muted></video>
+  <img id="result" alt="Foto capturada">
+
+  <div class="camera-placeholder" id="placeholder">
+    <span>📸</span>
+    <strong>Sua câmera aparecerá aqui</strong>
+    <small>Toque em iniciar câmera para começar.</small>
+  </div>
+
+  <div class="guide" id="guide">
+    Escolha uma inspiração para começar!
+  </div>
+
+</div>
+
+<div class="actions">
+  <button class="primary" onclick="startCamera()">
+    📷 Iniciar câmera
+  </button>
+
+  <button class="secondary" onclick="switchCamera()">
+    🔄 Trocar câmera
+  </button>
+</div>
+
+<div class="actions">
+  <button class="primary" onclick="capturePhoto()">
+    ✨ Tirar foto
+  </button>
+
+  <button class="secondary" onclick="retake()">
+    🔁 Refazer
+  </button>
+
+  <button class="secondary" onclick="downloadPhoto()">
+    ⬇ Baixar foto
+  </button>
+</div>
+
+<p class="status" id="status">
+  Selecione uma inspiração e inicie a câmera.
+</p>
+
+</main>
+
+<footer>
+  MemeCam © 2026 — Sua criatividade, sua foto!
+</footer>
+
+<script>
+const video = document.getElementById("video");
+const result = document.getElementById("result");
+const placeholder = document.getElementById("placeholder");
+const guide = document.getElementById("guide");
+const statusText = document.getElementById("status");
+
+let stream = null;
+let facingMode = "user";
+let currentTemplate = "Meme clássico";
+let photoData = null;
+
+function chooseTemplate(button, name, description) {
+  document.querySelectorAll(".template")
+    .forEach(item => item.classList.remove("active"));
+
+  button.classList.add("active");
+  currentTemplate = name;
+
+  guide.textContent = description;
+  statusText.textContent = "Inspiração selecionada: " + name;
+}
+
+async function startCamera() {
+  try {
+    stopCamera();
+
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: facingMode,
+        width: { ideal: 1280 },
+        height: { ideal: 960 }
+      }
+    });
+
+    video.srcObject = stream;
+    await video.play();
+
+    video.style.display = "block";
+    result.style.display = "none";
+    placeholder.style.display = "none";
+
+    statusText.textContent = "Câmera pronta! Prepare sua pose.";
+  } catch (error) {
+    statusText.textContent =
+      "Não foi possível acessar a câmera. Verifique a permissão e tente novamente.";
+
+    console.error(error);
+  }
+}
+
+function stopCamera() {
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
+}
+
+async function switchCamera() {
+  facingMode = facingMode === "user" ? "environment" : "user";
+  await startCamera();
+}
+
+function capturePhoto() {
+  if (!stream || !video.videoWidth) {
+    statusText.textContent = "Inicie a câmera primeiro!";
+    return;
+  }
+
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  // Corrige a imagem espelhada da câmera frontal
+  if (facingMode === "user") {
+    context.translate(canvas.width, 0);
+    context.scale(-1, 1);
+  }
+
+  context.drawImage(video, 0, 0);
+
+  // Identificação da inspiração
+  context.setTransform(1, 0, 0, 1, 0, 0);
+
+  const label = currentTemplate;
+  const fontSize = Math.max(20, canvas.width * 0.035);
+
+  context.fillStyle = "rgba(0,0,0,0.65)";
+  context.fillRect(0, canvas.height - 65, canvas.width, 65);
+
+  context.fillStyle = "white";
+  context.font = `bold ${fontSize}px Arial`;
+  context.textAlign = "center";
+
+  context.fillText(
+    label,
+    canvas.width / 2,
+    canvas.height - 23
+  );
+
+  photoData = canvas.toDataURL("image/png");
+
+  result.src = photoData;
+  result.style.display = "block";
+  video.style.display = "none";
+
+  guide.textContent = "Foto capturada! Gostou do resultado?";
+  statusText.textContent = "Sua foto está pronta!";
+}
+
+function retake() {
+  if (!stream) {
+    startCamera();
+    return;
+  }
+
+  result.style.display = "none";
+  video.style.display = "block";
+  guide.textContent = "Prepare sua próxima pose!";
+  statusText.textContent = "Câmera pronta para outra foto.";
+}
+
+function downloadPhoto() {
+  if (!photoData) {
+    statusText.textContent = "Tire uma foto antes de baixar!";
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.href = photoData;
+  link.download = "memecam-foto.png";
+  link.click();
+}
+
+window.addEventListener("beforeunload", stopCamera);
+</script>
+
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MemeCam - Recrie Momentos</title>
+
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #100e19;
+  color: white;
+  min-height: 100vh;
+}
+
+header {
+  padding: 20px;
+  text-align: center;
+  background: #1c1729;
+  border-bottom: 1px solid #39304b;
+}
+
+header h1 {
+  color: #c58aff;
+  font-size: 28px;
+}
+
+header p {
+  color: #aaa0b9;
+  margin-top: 6px;
+  font-size: 13px;
+}
+
+main {
+  max-width: 1000px;
+  margin: auto;
+  padding: 20px;
+}
+
+h2 {
+  font-size: 19px;
+  margin: 22px 0 12px;
+}
+
+.templates {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.template {
+  background: #211b30;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: 15px;
+  cursor: pointer;
+  color: white;
+  text-align: left;
+  transition: .2s;
+}
+
+.template:hover,
+.template.active {
+  border-color: #c58aff;
+  background: #332445;
+}
+
+.template .emoji {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.template small {
+  color: #b8acc7;
+  display: block;
+  margin-top: 5px;
+  line-height: 1.4;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin: 15px 0;
+}
+
+select, button {
+  padding: 13px;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+select {
+  background: #292238;
+  color: white;
+  border: 1px solid #55466a;
+}
+
+button {
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.primary {
+  background: #a85df0;
+  color: white;
+}
+
+.secondary {
+  background: #332b43;
+  color: white;
+  border: 1px solid #55466a;
+}
+
+button:active {
+  transform: scale(.97);
+}
+
+.camera-box {
+  position: relative;
+  width: 100%;
+  max-width: 650px;
+  margin: 20px auto;
+  background: #09080d;
+  border-radius: 18px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+}
+
+video, #result {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#result {
+  display: none;
+}
+
+.guide {
+  position: absolute;
+  bottom: 12px;
+  left: 10px;
+  right: 10px;
+  background: rgba(0,0,0,.65);
+  padding: 12px;
+  text-align: center;
+  border-radius: 10px;
+  color: white;
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.camera-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  color: #bba9ce;
+  text-align: center;
+  padding: 20px;
+}
+
+.camera-placeholder span {
+  font-size: 50px;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.status {
+  text-align: center;
+  color: #bba9ce;
+  font-size: 13px;
+  margin: 12px;
+}
+
+footer {
+  text-align: center;
+  color: #8f849e;
+  padding: 30px 10px;
+  font-size: 12px;
+}
+
+@media (min-width: 650px) {
+  .templates {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  header h1 {
+    font-size: 34px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>📸 MemeCam</h1>
+  <p>Entre no meme. Crie seu próprio momento!</p>
+</header>
+
+<main>
+
+<h2>🎭 Escolha sua inspiração</h2>
+
+<div class="templates">
+
+<button class="template active"
+onclick="chooseTemplate(this, '😂 Meme clássico', 'Faça uma expressão engraçada e exagere na reação!')">
+<span class="emoji">😂</span>
+<strong>Meme clássico</strong>
+<small>Recrie uma situação engraçada.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '🦸 Equipe de heróis', 'Todos devem fazer uma pose de equipe de super-heróis!')">
+<span class="emoji">🦸</span>
+<strong>Equipe de heróis</strong>
+<small>Uma pose épica em grupo.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '😱 Reação dramática', 'Faça a maior expressão de surpresa possível!')">
+<span class="emoji">😱</span>
+<strong>Reação dramática</strong>
+<small>Uma reação inesquecível.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '🎵 Capa de álbum', 'Organize o grupo como se fosse uma capa musical!')">
+<span class="emoji">🎵</span>
+<strong>Capa de álbum</strong>
+<small>Crie uma foto cinematográfica.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '🤔 Confusão', 'Todos olham para um ponto como se estivessem confusos!')">
+<span class="emoji">🤔</span>
+<strong>Confusão</strong>
+<small>O meme da dúvida.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '👑 Foto de celebridade', 'Faça uma pose de estrela no tapete vermelho!')">
+<span class="emoji">👑</span>
+<strong>Celebridade</strong>
+<small>Foto de capa de revista.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '🤝 Dupla dinâmica', 'Façam uma pose combinada de parceria!')">
+<span class="emoji">🤝</span>
+<strong>Dupla dinâmica</strong>
+<small>Uma foto em parceria.</small>
+</button>
+
+<button class="template"
+onclick="chooseTemplate(this, '🎬 Cena de filme', 'Prepare uma pose de pôster de cinema!')">
+<span class="emoji">🎬</span>
+<strong>Cena de filme</strong>
+<small>Seu próprio pôster.</small>
+</button>
+
+</div>
+
+<h2>👥 Participantes</h2>
+
+<div class="controls">
+  <label for="people">Pessoas na foto:</label>
+  <select id="people">
+    <option value="1">1 pessoa</option>
+    <option value="2">2 pessoas</option>
+    <option value="3">3 pessoas</option>
+    <option value="4">4 pessoas</option>
+    <option value="5">5 pessoas</option>
+  </select>
+</div>
+
+<h2>📷 Seu estúdio</h2>
+
+<div class="camera-box">
+
+  <video id="video" autoplay playsinline muted></video>
+  <img id="result" alt="Foto capturada">
+
+  <div class="camera-placeholder" id="placeholder">
+    <span>📸</span>
+    <strong>Sua câmera aparecerá aqui</strong>
+    <small>Toque em iniciar câmera para começar.</small>
+  </div>
+
+  <div class="guide" id="guide">
+    Escolha uma inspiração para começar!
+  </div>
+
+</div>
+
+<div class="actions">
+  <button class="primary" onclick="startCamera()">
+    📷 Iniciar câmera
+  </button>
+
+  <button class="secondary" onclick="switchCamera()">
+    🔄 Trocar câmera
+  </button>
+</div>
+
+<div class="actions">
+  <button class="primary" onclick="capturePhoto()">
+    ✨ Tirar foto
+  </button>
+
+  <button class="secondary" onclick="retake()">
+    🔁 Refazer
+  </button>
+
+  <button class="secondary" onclick="downloadPhoto()">
+    ⬇ Baixar foto
+  </button>
+</div>
+
+<p class="status" id="status">
+  Selecione uma inspiração e inicie a câmera.
+</p>
+
+</main>
+
+<footer>
+  MemeCam © 2026 — Sua criatividade, sua foto!
+</footer>
+
+<script>
+const video = document.getElementById("video");
+const result = document.getElementById("result");
+const placeholder = document.getElementById("placeholder");
+const guide = document.getElementById("guide");
+const statusText = document.getElementById("status");
+
+let stream = null;
+let facingMode = "user";
+let currentTemplate = "Meme clássico";
+let photoData = null;
+
+function chooseTemplate(button, name, description) {
+  document.querySelectorAll(".template")
+    .forEach(item => item.classList.remove("active"));
+
+  button.classList.add("active");
+  currentTemplate = name;
+
+  guide.textContent = description;
+  statusText.textContent = "Inspiração selecionada: " + name;
+}
+
+async function startCamera() {
+  try {
+    stopCamera();
+
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: facingMode,
+        width: { ideal: 1280 },
+        height: { ideal: 960 }
+      }
+    });
+
+    video.srcObject = stream;
+    await video.play();
+
+    video.style.display = "block";
+    result.style.display = "none";
+    placeholder.style.display = "none";
+
+    statusText.textContent = "Câmera pronta! Prepare sua pose.";
+  } catch (error) {
+    statusText.textContent =
+      "Não foi possível acessar a câmera. Verifique a permissão e tente novamente.";
+
+    console.error(error);
+  }
+}
+
+function stopCamera() {
+  if (stream) {
+    stream.getTracks().forEach(track => track.stop());
+    stream = null;
+  }
+}
+
+async function switchCamera() {
+  facingMode = facingMode === "user" ? "environment" : "user";
+  await startCamera();
+}
+
+function capturePhoto() {
+  if (!stream || !video.videoWidth) {
+    statusText.textContent = "Inicie a câmera primeiro!";
+    return;
+  }
+
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  // Corrige a imagem espelhada da câmera frontal
+  if (facingMode === "user") {
+    context.translate(canvas.width, 0);
+    context.scale(-1, 1);
+  }
+
+  context.drawImage(video, 0, 0);
+
+  // Identificação da inspiração
+  context.setTransform(1, 0, 0, 1, 0, 0);
+
+  const label = currentTemplate;
+  const fontSize = Math.max(20, canvas.width * 0.035);
+
+  context.fillStyle = "rgba(0,0,0,0.65)";
+  context.fillRect(0, canvas.height - 65, canvas.width, 65);
+
+  context.fillStyle = "white";
+  context.font = `bold ${fontSize}px Arial`;
+  context.textAlign = "center";
+
+  context.fillText(
+    label,
+    canvas.width / 2,
+    canvas.height - 23
+  );
+
+  photoData = canvas.toDataURL("image/png");
+
+  result.src = photoData;
+  result.style.display = "block";
+  video.style.display = "none";
+
+  guide.textContent = "Foto capturada! Gostou do resultado?";
+  statusText.textContent = "Sua foto está pronta!";
+}
+
+function retake() {
+  if (!stream) {
+    startCamera();
+    return;
+  }
+
+  result.style.display = "none";
+  video.style.display = "block";
+  guide.textContent = "Prepare sua próxima pose!";
+  statusText.textContent = "Câmera pronta para outra foto.";
+}
+
+function downloadPhoto() {
+  if (!photoData) {
+    statusText.textContent = "Tire uma foto antes de baixar!";
+    return;
+  }
+
+  const link = document.createElement("a");
+  link.href = photoData;
+  link.download = "memecam-foto.png";
+  link.click();
+}
+
+window.addEventListener("beforeunload", stopCamera);
+</script>
+
+</body>
+</html>
